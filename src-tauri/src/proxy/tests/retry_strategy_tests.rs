@@ -18,6 +18,22 @@ fn test_retry_strategy_404() {
 }
 
 #[test]
+fn test_retry_strategy_429_hard_quota_exhausted() {
+    for err in [
+        "RESOURCE_EXHAUSTED",
+        "quota_exhausted",
+        "exceeded your current quota",
+        "insufficient_quota",
+    ] {
+        let strategy = determine_retry_strategy(429, err, false);
+        match strategy {
+            RetryStrategy::FixedDelay(d) => assert_eq!(d, Duration::from_millis(50)),
+            other => panic!("Expected FixedDelay(50ms) for {}, got {:?}", err, other),
+        }
+    }
+}
+
+#[test]
 fn test_retry_strategy_429_no_delay() {
     let strategy = determine_retry_strategy(429, "rate limited", false);
     assert!(
