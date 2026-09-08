@@ -220,11 +220,6 @@ impl RateLimitTracker {
     ) {
         self.set_lockout_until_with_cap(account_id, reset_time, reason, model, true);
     }
-                account_id,
-                retry_sec
-            );
-        }
-    }
 
     pub fn restore_persisted_long_image_limit(
         &self,
