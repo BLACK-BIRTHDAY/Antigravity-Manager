@@ -1697,7 +1697,7 @@ pub fn update_account_quota(account_id: &str, quota: QuotaData) -> Result<(), St
                 }
             }
         } else {
-            // [FIX] 当配额保护被禁用时，自动清除受保护模型标记，避免遗留历史锁
+            // [FIX] 当配额保护在全局关闭时，清空受保护模型列表，避免遗留历史锁
             if !account.protected_models.is_empty() {
                 crate::modules::logger::log_info(&format!(
                     "[Quota] Quota protection disabled globally, clearing protected models for {}",
