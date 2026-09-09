@@ -2027,8 +2027,12 @@ pub async fn handle_chat_completions(
                 {
                     Ok(t) => t,
                     Err(e) => {
-                        // [FIX] Attach headers to error response for logging visibility
-                        let headers = [("X-Mapped-Model", mapped_model.as_str())];
+                        // [Issue #3414] Attach headers with Retry-After if temporary cooldown exists
+                        let headers = crate::proxy::handlers::common::build_token_error_headers(
+                            Some(mapped_model.as_str()),
+                            None,
+                            &e,
+                        );
                         return Ok((
                             StatusCode::SERVICE_UNAVAILABLE,
                             headers,
@@ -2758,22 +2762,18 @@ pub async fn handle_chat_completions(
 
     // 所有尝试均失败：仅当全部结构化失败状态均为 429 时返回 429
     let final_status = failure_statuses.final_status();
+    let headers = crate::proxy::handlers::common::build_token_error_headers(
+        Some(mapped_model.as_str()),
+        last_email.as_deref(),
+        &last_error,
+    );
 
-    if let Some(email) = last_email {
-        Ok((
-            final_status,
-            [("X-Account-Email", email), ("X-Mapped-Model", mapped_model)],
-            format!("All accounts exhausted. Last error: {}", last_error),
-        )
-            .into_response())
-    } else {
-        Ok((
-            final_status,
-            [("X-Mapped-Model", mapped_model)],
-            format!("All accounts exhausted. Last error: {}", last_error),
-        )
-            .into_response())
-    }
+    Ok((
+        final_status,
+        headers,
+        format!("All accounts exhausted. Last error: {}", last_error),
+    )
+        .into_response())
 }
 
 // --- Codex GUIDANCE PROMPTS ---
@@ -3810,9 +3810,14 @@ pub async fn handle_completions(
                 {
                     Ok(t) => t,
                     Err(e) => {
+                        let headers = crate::proxy::handlers::common::build_token_error_headers(
+                            Some(mapped_model.as_str()),
+                            None,
+                            &e,
+                        );
                         return (
                             StatusCode::SERVICE_UNAVAILABLE,
-                            [("X-Mapped-Model", mapped_model)],
+                            headers,
                             format!("Token error: {}", e),
                         )
                             .into_response()
@@ -4532,21 +4537,17 @@ pub async fn handle_completions(
 
     // 所有尝试均失败
     let final_status = failure_statuses.final_status();
-    if let Some(email) = last_email {
-        (
-            final_status,
-            [("X-Account-Email", email), ("X-Mapped-Model", mapped_model)],
-            format!("All accounts exhausted. Last error: {}", last_error),
-        )
-            .into_response()
-    } else {
-        (
-            final_status,
-            [("X-Mapped-Model", mapped_model)],
-            format!("All accounts exhausted. Last error: {}", last_error),
-        )
-            .into_response()
-    }
+    let headers = crate::proxy::handlers::common::build_token_error_headers(
+        Some(mapped_model.as_str()),
+        last_email.as_deref(),
+        &last_error,
+    );
+    (
+        final_status,
+        headers,
+        format!("All accounts exhausted. Last error: {}", last_error),
+    )
+        .into_response()
 }
 
 pub async fn handle_list_models(State(state): State<AppState>) -> impl IntoResponse {
