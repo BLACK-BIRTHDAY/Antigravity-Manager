@@ -149,10 +149,18 @@ pub struct CircuitBreakerConfig {
     /// Default: [60, 300, 1800, 7200]
     #[serde(default = "default_backoff_steps")]
     pub backoff_steps: Vec<u64>,
+
+    /// Lock account until quota reset time when 5-hour rolling or weekly quota reaches 0
+    #[serde(default = "default_lock_on_zero_quota")]
+    pub lock_on_zero_quota: bool,
 }
 
 fn default_backoff_steps() -> Vec<u64> {
     vec![60, 300, 1800, 7200]
+}
+
+fn default_lock_on_zero_quota() -> bool {
+    false
 }
 
 impl CircuitBreakerConfig {
@@ -160,6 +168,7 @@ impl CircuitBreakerConfig {
         Self {
             enabled: true,
             backoff_steps: default_backoff_steps(),
+            lock_on_zero_quota: false,
         }
     }
 }
