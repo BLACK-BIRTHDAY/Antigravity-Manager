@@ -771,6 +771,15 @@ impl TokenManager {
         };
 
         if !config.enabled {
+            // [FIX] 当配额保护在全局关闭时，清空受保护模型列表，避免遗留锁定显示与调度过滤
+            if let Some(arr) = account_json.get_mut("protected_models").and_then(|v| v.as_array_mut()) {
+                if !arr.is_empty() {
+                    arr.clear();
+                    let _ = update_account_json(account_path, |latest| {
+                        latest["protected_models"] = serde_json::Value::Array(Vec::new());
+                    }).await;
+                }
+            }
             return false; // 配额保护未启用
         }
 

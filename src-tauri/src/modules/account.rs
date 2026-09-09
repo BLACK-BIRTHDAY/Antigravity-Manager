@@ -1696,6 +1696,15 @@ pub fn update_account_quota(account_id: &str, quota: QuotaData) -> Result<(), St
                     account.proxy_disabled_at = None;
                 }
             }
+        } else {
+            // [FIX] 当配额保护在全局关闭时，清空受保护模型列表，避免遗留历史锁
+            if !account.protected_models.is_empty() {
+                crate::modules::logger::log_info(&format!(
+                    "[Quota] Quota protection disabled globally, clearing protected models for {}",
+                    account.email
+                ));
+                account.protected_models.clear();
+            }
         }
     }
     // --- Quota protection logic end ---
