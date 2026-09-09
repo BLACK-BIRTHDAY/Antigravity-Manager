@@ -32,6 +32,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm install --legacy-peer-deps
 
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
       - name: Disable updater artifacts and configure NSIS bundle only
         shell: pwsh
         run: |

@@ -499,13 +499,15 @@ impl RateLimitTracker {
         };
 
         let mut retry_sec = retry_sec;
-        if retry_sec > MAX_LOCKOUT_SECONDS && !preserve_long_image_quota {
+        let max_allowed_lockout = backoff_steps.iter().copied().max().unwrap_or(MAX_LOCKOUT_SECONDS).max(MAX_LOCKOUT_SECONDS);
+        if retry_sec > max_allowed_lockout && !preserve_long_image_quota {
             tracing::info!(
-                "Capping retry lockout time for {} from {}s to 300s (5 minutes)",
+                "Capping retry lockout time for {} from {}s to {}s (max backoff limit)",
                 account_id,
-                retry_sec
+                retry_sec,
+                max_allowed_lockout
             );
-            retry_sec = MAX_LOCKOUT_SECONDS;
+            retry_sec = max_allowed_lockout;
         }
 
         let info = RateLimitInfo {
