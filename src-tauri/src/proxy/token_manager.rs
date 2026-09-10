@@ -296,7 +296,7 @@ impl TokenManager {
                     // 跳过无效账号
                 }
                 Err(e) => {
-                    tracing::debug!("加载账号失败 {:?}: {}", path, e);
+                    tracing::warn!("加载账号失败 {:?}: {}", path, e);
                 }
             }
         }
