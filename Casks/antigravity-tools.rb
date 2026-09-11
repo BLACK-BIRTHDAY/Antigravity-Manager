@@ -25,15 +25,15 @@ cask "antigravity-tools" do
       "~/Library/Preferences/com.lbjlaq.antigravity-tools.plist",
       "~/Library/Saved Application State/com.lbjlaq.antigravity-tools.savedState",
     ]
-
-
   end
 
   on_linux do
     arch arm: "aarch64", intel: "amd64"
 
     url "https://github.com/lbjlaq/Antigravity-Manager/releases/download/v#{version}/Antigravity.Tools_#{version}_#{arch}.AppImage"
-    binary "Antigravity.Tools_#{version}_#{arch}.AppImage", target: "antigravity-tools"    preflight_steps do
+    binary "Antigravity.Tools_#{version}_#{arch}.AppImage", target: "antigravity-tools"
+
+    preflight_steps do
       set_permissions "Antigravity.Tools_{{version}}_{{arch}}.AppImage", "0755"
     end
   end
