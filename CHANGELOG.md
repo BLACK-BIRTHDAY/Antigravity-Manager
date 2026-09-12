@@ -22,6 +22,8 @@
         -   **[日志降噪与容器运维] Claude 签名日志降噪与 Docker Compose 日志轮转 (PR #3421, PR #3422)**:
             -   **日志等级优化**: 将 Claude Code 循环调用中高频产生的签名缓存恢复与数据清洗日志由 `info!` 降为 `debug!`，避免海量日志淹没控制台与磁盘。
             -   **Compose 默认日志轮转**: 为所有 Docker Compose 模板统一增加 `max-size: "100m"` 与 `max-file: "3"` 轮转策略，控制容器单实例日志上限约 300MB。
+        -   **[Linux & CLI 鉴权修复] 解决 Linux Secret Service 集合分裂导致切换 agy 账号不生效 (Issue #3418, Issue #3428)**:
+            -   **强制同步 'login' 与 'default' 凭据集合**: 针对 GNOME Keyring / Ubuntu / Debian 等 Linux 环境中系统别名分裂问题（`login` 集合与 `default` 集合指向不同 Keyring 文件，而 `agy` 优先从 `login` 集合读取凭据），在写入 `secret-tool` 时显式指定 `--collection=login` 并与默认集合双向同步，彻底消除切换 CLI 账号后新启动的 `agy` 依然沿用旧账号的缺陷。
         -   **[Agent 兼容与工具调用防御] 修复 Gemini 函数调用偶发漏参导致下游客户端崩溃与死锁 (Issue #3430)**:
             -   **必填 command 字段防空守卫**: 针对 OpenAI 兼容接口下的 `PowerShell`、`powershell`、`pwsh`、`bash`、`shell`、`terminal`、`run_command` 等命令执行类工具，解决长上下文或复杂提示词下 Gemini 偶发仅输出 `description` 漏掉 `command` 导致下游（如 WorkBuddy、LangChain 等）抛出 `TypeError: Cannot read properties of undefined (reading 'split')` 致命崩溃的问题。
             -   **智能 [OK] 语义兜底与死锁消除**: 扩展别名匹配（兼容 `input`/`shell_command` 等），当模型仍未提供命令时，自动根据 `description` 构造安全的 `echo "[OK: Action logged - <description>]"` 占位指令，既防止下游执行器报错，又通过 Exit 0 与明确的完成标识避免模型陷入「漏参 ➔ 失败 ➔ 反复重试漏参」的高频死循环。
