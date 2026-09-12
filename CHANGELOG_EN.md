@@ -30,6 +30,10 @@
         -   **[UI & Packaging] Dark Mode Switch Highlight & Homebrew Cask Modernization (PR #3431, PR #3432)**:
             -   **Dark Mode Toggle Visibility**: Fixed active switches in dark mode being obscured by gray backgrounds by applying clear blue tracks and white thumbs.
             -   **Modern Homebrew Cask DSL**: Migrated deprecated Cask `preflight`/`postflight` blocks to structured `preflight_steps` and `postflight_steps`.
+        -   **[Quota & Load Balancing Fix] Fix Fake 100% Quota, Multi-Endpoint Fallback & Bucket Fusion (Issue #3426)**:
+            -   **Multi-Endpoint Fallback Continuity**: Removed premature `return None` on 4xx responses in `retrieveUserQuotaSummary`, ensuring fallback continues through Sandbox ➔ Daily ➔ Prod endpoints; added equivalent 3-tier fallback to `loadCodeAssist` (`fetch_project_id`).
+            -   **Reuse Cached Project ID**: Passed cached `project_id` throughout account quota polling and retry paths to avoid extraneous `loadCodeAssist` calls that trigger rate limits or 403 errors.
+            -   **Deep Quota Bucket Fusion**: Fused actual remaining fraction and reset time from `retrieveUserQuotaSummary` into `quota_data.models`, completely eliminating the fake 100% quota display in the UI.
     *   **v4.7.0 (2026-09-10)**:
         -   **[Session & Proxy Fix] Prevent 400 Errors and Account Freezes from Upstream 1M Token Accumulation (PR #3415, Issue #3411, refs #3325)**:
             -   **Scoped Session IDs per Conversation**: Replaced the account-email-only upstream `sessionId` hash with a scoped derivation combining `account_id`, conversation fingerprint, and a generation counter. Keeps upstream Prompt Cache hits stable within the same dialogue while strictly isolating different conversations from sharing one server-side session.

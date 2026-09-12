@@ -1861,13 +1861,15 @@ pub async fn fetch_quota_with_retry(account: &mut Account) -> crate::error::AppR
         }
     }
 
-    // 2. Attempt query
-    let result: crate::error::AppResult<(QuotaData, Option<String>)> = modules::fetch_quota(
-        &account.token.access_token,
-        &account.email,
-        Some(&account.id),
-    )
-    .await;
+    // 2. Attempt query (pass cached project_id if available to avoid unnecessary loadCodeAssist)
+    let result: crate::error::AppResult<(QuotaData, Option<String>)> =
+        modules::fetch_quota_with_cache(
+            &account.token.access_token,
+            &account.email,
+            account.token.project_id.as_deref(),
+            Some(&account.id),
+        )
+        .await;
 
     // Capture potentially updated project_id and save
     if let Ok((ref _q, ref project_id)) = result {
@@ -1955,11 +1957,12 @@ pub async fn fetch_quota_with_retry(account: &mut Account) -> crate::error::AppR
                 upsert_account(account.email.clone(), name, new_token.clone())
                     .map_err(AppError::Account)?;
 
-                // Retry query
+                // Retry query (pass cached project_id if available)
                 let retry_result: crate::error::AppResult<(QuotaData, Option<String>)> =
-                    modules::fetch_quota(
+                    modules::fetch_quota_with_cache(
                         &new_token.access_token,
                         &account.email,
+                        account.token.project_id.as_deref(),
                         Some(&account.id),
                     )
                     .await;

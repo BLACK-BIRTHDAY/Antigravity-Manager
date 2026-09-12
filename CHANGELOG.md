@@ -30,6 +30,10 @@
         -   **[UI 与打包优化] 暗黑模式开关样式高亮与 Homebrew Cask 脚本更新 (PR #3431, PR #3432)**:
             -   **暗黑模式开关高亮**: 修复暗黑模式下开关开启时灰色背景覆盖高亮状态的问题，开启态采用醒目蓝底白钮设计。
             -   **Homebrew 规范升级**: 迁移 Homebrew Cask 配方中的废弃 flight hooks 至最新的 `postflight_steps` 与 `preflight_steps` DSL API。
+        -   **[配额显示与负载均衡修复] 修复配额假 100% 显示、多端点回退及桶余量动态融合 (Issue #3426)**:
+            -   **端点连续容灾降级**: 移除 `retrieveUserQuotaSummary` 在遇到 4xx（如 Sandbox 沙盒环境 403）时过早退出 `return None` 的缺陷，确保按 Sandbox ➔ Daily ➔ Prod 顺序完整尝试所有候选端点；同时为 `loadCodeAssist` (`fetch_project_id`) 补齐三级端点回退机制。
+            -   **复用已缓存 Project ID**: 在账号配额轮询与重试链路中，优先透传已有的 `project_id` 缓存，大幅降低因高频额外请求 `loadCodeAssist` 触发限流或 403 的概率。
+            -   **真实配额桶数据深度融合**: 将 `retrieveUserQuotaSummary` 返回的实时分桶百分比（Claude/3P 及 Gemini 对应窗口剩余比例）精准回填至 `quota_data.models` 对应模型项中，彻底解决 UI 配额永远显示假 100% 的问题。
     *   **v4.7.0 (2026-09-10)**:
         -   **[会话与代理修复] 修复会话级累计 Token 突破 100 万上限导致账号瘫痪与 400 报错 (PR #3415, Issue #3411, refs #3325)**:
             -   **对话级隔离与作用域 Session ID**: 改变此前上游 `sessionId` 纯由账号 ID/邮箱哈希生成的机制（导致同账号下所有对话在服务端共享单一 Session 并在长工具调用中累计输入 Token 突破 1,048,576 限制报 400）。现将 `account_id`、对话指纹（`fingerprint`）与代数计数器（`generation`）组合派生，同一对话内保持稳定（保留上游 Prompt Cache 缓存命中收益），不同对话间相互隔离。
