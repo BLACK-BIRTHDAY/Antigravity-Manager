@@ -3,6 +3,28 @@
 > Complete version history for Antigravity Tools. Return to project home at [README_EN.md](README_EN.md).
 
 *   **Version History**:
+    *   **v4.7.1 (2026-09-12)**:
+        -   **[Ecosystem Integration] One-Click Sync of APIKEY.FUN Credentials & Models to OpenCode (PR #3427)**:
+            -   **OpenCode Sync Button**: Added an OpenCode sync feature on the APIKEY.FUN page to automatically export the configured API Key, BaseURL, and discovered models into OpenCode's configuration as an independent `apikey-fun` provider (via `@ai-sdk/openai-compatible`).
+            -   **Safety & Edge Protections**: Supports both Tauri commands and HTTP API; backs up existing configuration files prior to mutation while preserving other providers and custom model parameters; normalizes trailing slashes to prevent `/v1/v1` duplication; full 13-locale i18n support.
+        -   **[Storage & Data Safety] Atomic File Writes for Accounts & Configurations (PR #3420)**:
+            -   **Atomic Write Engine (`write_atomic`)**: Re-architected configuration and account index persistence using temporary files (`<file>.tmp.<uuid>`), memory flushes (`write_all`), guaranteed physical disk sync (`sync_all` / fsync), and atomic rename operations. Eliminates 0-byte corruptions and loss on unexpected power cuts, kernel panics, or sudden disk-full scenarios.
+            -   **Elevated Error Visibility**: Promoted account parsing failures to `warn!` logging to immediately surface corrupted files.
+        -   **[Circuit Breaker & Timestamps] Fix reset_time NaN Countdown & Isolate Model-Specific Zero-Quota Locks (PR #3417)**:
+            -   **Resolve `NaNh NaNm` UI Countdown Bug**: Formatted backend rate-limit `reset_time` as standardized RFC3339 / ISO-8601 strings, and introduced `parseFlexibleDate` on the frontend to support both numeric timestamps and ISO strings.
+            -   **Isolated Model-Level Zero-Quota Circuit Breaking**: When a specific quota bucket (such as Claude `3p-5h`) reaches 0%, the `lock_on_zero_quota` lock now isolates only the corresponding model category (`claude` or `gemini-3-flash`), leaving other models with available quota untouched.
+        -   **[Proxy Log Retention] Automated Log Retention Policy & Space Reclamation (PR #3423)**:
+            -   **Configurable Retention Limits**: Introduced automatic request log lifecycle management with defaults of 24-hour body retention, 30-day metadata retention, and a 100,000-row cap. Executes at startup and hourly thereafter.
+            -   **Incremental Vacuum**: Automatically runs incremental SQLite space reclamation to bound database growth, with UI settings and multi-language support.
+        -   **[Proxy Resilience & Decryption Fallback] Decryption Failure Warnings & URL Fallback (PR #3424)**:
+            -   **Machine-ID Drift Warning**: Emits structured warnings when proxy credentials cannot be decrypted (e.g. after container migration where `/etc/machine-id` changed), preventing encrypted ciphertext from being forwarded upstream as raw passwords.
+            -   **Embedded URL Credentials Fallback**: When structured authentication decryption fails, gracefully falls back to credentials embedded in the proxy URL.
+        -   **[Logging & Container Maintenance] Claude Signature Cache Log Demotion & Docker Log Rotation (PR #3421, PR #3422)**:
+            -   **Reduce Log Noise**: Demoted high-frequency signature cache recovery and sanitizer log lines to `debug!`, saving up to ~1GB/day of Docker log volume.
+            -   **Compose Log Rotation**: Added `json-file` log caps (`max-size: "100m"`, `max-file: "3"`) across all Compose configurations to cap disk usage per container at ~300MB.
+        -   **[UI & Packaging] Dark Mode Switch Highlight & Homebrew Cask Modernization (PR #3431, PR #3432)**:
+            -   **Dark Mode Toggle Visibility**: Fixed active switches in dark mode being obscured by gray backgrounds by applying clear blue tracks and white thumbs.
+            -   **Modern Homebrew Cask DSL**: Migrated deprecated Cask `preflight`/`postflight` blocks to structured `preflight_steps` and `postflight_steps`.
     *   **v4.7.0 (2026-09-10)**:
         -   **[Session & Proxy Fix] Prevent 400 Errors and Account Freezes from Upstream 1M Token Accumulation (PR #3415, Issue #3411, refs #3325)**:
             -   **Scoped Session IDs per Conversation**: Replaced the account-email-only upstream `sessionId` hash with a scoped derivation combining `account_id`, conversation fingerprint, and a generation counter. Keeps upstream Prompt Cache hits stable within the same dialogue while strictly isolating different conversations from sharing one server-side session.
