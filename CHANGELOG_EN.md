@@ -22,6 +22,9 @@
         -   **[Logging & Container Maintenance] Claude Signature Cache Log Demotion & Docker Log Rotation (PR #3421, PR #3422)**:
             -   **Reduce Log Noise**: Demoted high-frequency signature cache recovery and sanitizer log lines to `debug!`, saving up to ~1GB/day of Docker log volume.
             -   **Compose Log Rotation**: Added `json-file` log caps (`max-size: "100m"`, `max-file: "3"`) across all Compose configurations to cap disk usage per container at ~300MB.
+        -   **[Agent Compatibility & Tool Call Sanitization] Prevent Downstream Client Crashes on Incomplete Gemini Function Calls (Issue #3430)**:
+            -   **Required command Parameter Guard**: Addressed issues where Gemini Flash in complex or long-context turns occasionally emits only `description` while omitting the required `command` parameter for tools like `PowerShell`, `pwsh`, `bash`, `shell`, and `terminal`. Prevents downstream agent runners (e.g. WorkBuddy, LangChain) from throwing fatal `TypeError: Cannot read properties of undefined (reading 'split')`.
+            -   **Smart [OK] Semantic Fallback & Anti-Looping**: Expanded alias normalization (`cmd`, `code`, `script`, `shell_command`, `input`). When commands are completely missing, injects a safe `echo "[OK: Action logged - <description>]"` fallback with clean exit status, preventing repetitive failed retries and endless agent deadlock loops.
         -   **[UI & Packaging] Dark Mode Switch Highlight & Homebrew Cask Modernization (PR #3431, PR #3432)**:
             -   **Dark Mode Toggle Visibility**: Fixed active switches in dark mode being obscured by gray backgrounds by applying clear blue tracks and white thumbs.
             -   **Modern Homebrew Cask DSL**: Migrated deprecated Cask `preflight`/`postflight` blocks to structured `preflight_steps` and `postflight_steps`.

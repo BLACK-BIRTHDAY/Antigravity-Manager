@@ -22,6 +22,9 @@
         -   **[日志降噪与容器运维] Claude 签名日志降噪与 Docker Compose 日志轮转 (PR #3421, PR #3422)**:
             -   **日志等级优化**: 将 Claude Code 循环调用中高频产生的签名缓存恢复与数据清洗日志由 `info!` 降为 `debug!`，避免海量日志淹没控制台与磁盘。
             -   **Compose 默认日志轮转**: 为所有 Docker Compose 模板统一增加 `max-size: "100m"` 与 `max-file: "3"` 轮转策略，控制容器单实例日志上限约 300MB。
+        -   **[Agent 兼容与工具调用防御] 修复 Gemini 函数调用偶发漏参导致下游客户端崩溃与死锁 (Issue #3430)**:
+            -   **必填 command 字段防空守卫**: 针对 OpenAI 兼容接口下的 `PowerShell`、`powershell`、`pwsh`、`bash`、`shell`、`terminal`、`run_command` 等命令执行类工具，解决长上下文或复杂提示词下 Gemini 偶发仅输出 `description` 漏掉 `command` 导致下游（如 WorkBuddy、LangChain 等）抛出 `TypeError: Cannot read properties of undefined (reading 'split')` 致命崩溃的问题。
+            -   **智能 [OK] 语义兜底与死锁消除**: 扩展别名匹配（兼容 `input`/`shell_command` 等），当模型仍未提供命令时，自动根据 `description` 构造安全的 `echo "[OK: Action logged - <description>]"` 占位指令，既防止下游执行器报错，又通过 Exit 0 与明确的完成标识避免模型陷入「漏参 ➔ 失败 ➔ 反复重试漏参」的高频死循环。
         -   **[UI 与打包优化] 暗黑模式开关样式高亮与 Homebrew Cask 脚本更新 (PR #3431, PR #3432)**:
             -   **暗黑模式开关高亮**: 修复暗黑模式下开关开启时灰色背景覆盖高亮状态的问题，开启态采用醒目蓝底白钮设计。
             -   **Homebrew 规范升级**: 迁移 Homebrew Cask 配方中的废弃 flight hooks 至最新的 `postflight_steps` 与 `preflight_steps` DSL API。

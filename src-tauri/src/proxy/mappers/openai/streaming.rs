@@ -188,21 +188,8 @@ where
                                                                     let name = func_call.get("name").and_then(|v| v.as_str()).unwrap_or("unknown");
                                                                     let mut args = func_call.get("args").unwrap_or(&json!({})).clone();
 
-                                                                    // [FIX #1575] 标准化 shell 工具参数名称
-                                                                    // Gemini 可能使用 cmd/code/script 等替代参数名，统一为 command
-                                                                    if name == "shell" || name == "bash" || name == "local_shell" {
-                                                                        if let Some(obj) = args.as_object_mut() {
-                                                                            if !obj.contains_key("command") {
-                                                                                for alt_key in &["cmd", "code", "script", "shell_command"] {
-                                                                                    if let Some(val) = obj.remove(*alt_key) {
-                                                                                        obj.insert("command".to_string(), val);
-                                                                                        debug!("[OpenAI-Stream] Normalized shell arg '{}' -> 'command'", alt_key);
-                                                                                        break;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
+                                                                    // [FIX #1575 & #3430] 标准化并清洗 shell / PowerShell 等工具参数名称与必填字段
+                                                                    super::response::normalize_and_sanitize_tool_args(name, &mut args);
 
                                                                     let final_name = super::response::resolve_shell_tool_name(name, &client_tool_names);
 
@@ -779,18 +766,8 @@ where
                                                                 let name = func_call.get("name").and_then(|v| v.as_str()).unwrap_or("unknown");
                                                                 let mut args = func_call.get("args").unwrap_or(&json!({})).clone();
 
-                                                                if name == "shell" || name == "bash" || name == "local_shell" {
-                                                                    if let Some(obj) = args.as_object_mut() {
-                                                                        if !obj.contains_key("command") {
-                                                                            for alt_key in &["cmd", "code", "script", "shell_command"] {
-                                                                                if let Some(val) = obj.remove(*alt_key) {
-                                                                                    obj.insert("command".to_string(), val);
-                                                                                    break;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
+                                                                // [FIX #1575 & #3430] 标准化并清洗 shell / PowerShell 等工具参数名称与必填字段
+                                                                super::response::normalize_and_sanitize_tool_args(name, &mut args);
 
                                                                 let args_str = serde_json::to_string(&args).unwrap_or_default();
 
