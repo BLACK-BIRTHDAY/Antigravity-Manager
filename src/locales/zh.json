@@ -1422,7 +1422,8 @@
       "quickConfig": "一键配置本地开发环境",
       "syncDesc": "同步至官方标准配置",
       "codexTooltip": "将 API Key 与 BaseURL 同步至 Codex / ChatGPT CLI",
-      "claudeTooltip": "将 API Key 与 BaseURL 同步至 Claude Code"
+      "claudeTooltip": "将 API Key 与 BaseURL 同步至 Claude Code",
+      "opencodeTooltip": "将 API Key、BaseURL 和模型同步至 OpenCode"
     },
     "models": {
       "title": "可用模型",
