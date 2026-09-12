@@ -37,3 +37,4 @@
 *.dll binary
 *.so binary
 *.dylib binary
+graphify-out/graph.json merge=graphify
