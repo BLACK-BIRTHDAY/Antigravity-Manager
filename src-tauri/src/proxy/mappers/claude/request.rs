@@ -1282,7 +1282,7 @@ fn build_contents(
                                 // Try session-based signature cache at specific msg_index first (Layer 3)
                                 crate::proxy::SignatureCache::global().get_session_signature_at(session_id, msg_index)
                                     .map(|s| {
-                                        tracing::info!(
+                                        tracing::debug!(
                                             "[Claude-Request] Recovered signature from SESSION cache at turn {} (session: {}, len: {})",
                                             msg_index, session_id, s.len()
                                         );
@@ -1293,7 +1293,7 @@ fn build_contents(
                                 // Fallback to latest session signature
                                 crate::proxy::SignatureCache::global().get_session_signature(session_id)
                                     .map(|s| {
-                                        tracing::info!(
+                                        tracing::debug!(
                                             "[Claude-Request] Recovered latest signature from SESSION cache (session: {}, len: {})",
                                             session_id, s.len()
                                         );
